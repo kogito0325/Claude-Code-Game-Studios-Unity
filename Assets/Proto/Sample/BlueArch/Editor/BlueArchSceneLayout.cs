@@ -206,6 +206,58 @@ namespace Proto.Sample.BlueArch.EditorTools
             Debug.Log($"Fixed {fixedCount} SkinnedMeshRenderer mesh refs in BlueEnemy prefab.");
         }
 
+        [MenuItem("Proto/BlueArch/Diagnose Player Animator")]
+        public static void DiagnosePlayerAnimator()
+        {
+            var player = GameObject.Find("Player");
+            if (player == null) { Debug.LogError("Player not found"); return; }
+            var anim = player.GetComponent<Animator>();
+            if (anim == null) { Debug.LogError("Animator missing on Player"); return; }
+            Debug.Log($"Controller: {(anim.runtimeAnimatorController != null ? anim.runtimeAnimatorController.name : "<NULL>")}");
+            Debug.Log($"Layer count: {anim.layerCount}");
+
+            string[] candidates = new[]
+            {
+                "IDLE", "IDLE 0", "JOG", "WALK", "RUN", "SHOOT", "AUTO SHOOT",
+                "DIE F", "----normal", "Idle_Normal_NoWeapon"
+            };
+            foreach (string n in candidates)
+            {
+                int hash = Animator.StringToHash(n);
+                Debug.Log($"HasState[layer 0] '{n}' -> {anim.HasState(0, hash)}");
+            }
+
+            // Also list ALL clip names referenced by the controller via AnimatorController asset access
+            var ac = anim.runtimeAnimatorController as UnityEditor.Animations.AnimatorController;
+            if (ac != null)
+            {
+                foreach (var layer in ac.layers)
+                {
+                    Debug.Log($"-- Layer '{layer.name}' --");
+                    DumpStateMachine(layer.stateMachine, "");
+                }
+            }
+            else
+            {
+                Debug.Log("Controller is not an editable AnimatorController (might be Override).");
+            }
+        }
+
+        private static void DumpStateMachine(UnityEditor.Animations.AnimatorStateMachine sm, string indent)
+        {
+            if (sm == null) return;
+            foreach (var s in sm.states)
+            {
+                string clipName = s.state.motion != null ? s.state.motion.name : "<no motion>";
+                Debug.Log($"{indent}State '{s.state.name}' (clip: {clipName})");
+            }
+            foreach (var sub in sm.stateMachines)
+            {
+                Debug.Log($"{indent}-> Sub '{sub.stateMachine.name}'");
+                DumpStateMachine(sub.stateMachine, indent + "  ");
+            }
+        }
+
         [MenuItem("Proto/BlueArch/Diagnose BlueEnemy Mesh")]
         public static void DiagnoseBlueEnemyMesh()
         {
