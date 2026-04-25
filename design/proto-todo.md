@@ -41,7 +41,7 @@
   - SpawnPoint 8개 모두 NavMesh 위 (`SamplePosition` within 2m 검증 PASS)
 - **알려진 부수 이슈**: Player 시작 위치가 (0,0,0)인데 RPGTinyHero 맵 표면은 Y≈-4.92 → Player가 공중에 떠 있음. 적은 path 자동 보정으로 도달 가능하지만 사용자 확인 필요.
 
-### [ ] #3 플레이어 조작 방식 변경 — 마우스 조준 + 좌클릭 발사
+### [x] #3 플레이어 조작 방식 변경 — 마우스 조준 + 좌클릭 발사 (구현 완료)
 - **현재**: 자동으로 가장 가까운 적 향해 회전·발사 (`BlueAutoAttacker.HasTarget`)
 - **변경**:
   - **상체(회전)**: 항상 마우스 커서 위치를 향해 회전 — 플레이어 발 위치에서 카메라 ray로 ground 평면(y=0) 교점 계산
@@ -49,6 +49,12 @@
   - **사격**: 좌클릭 시점에만 발사 (자동 사격 → 수동 사격), 누르고 있으면 연사
 - **수정 대상**: `BluePlayerController.cs` (회전 소스 변경: 적 → 마우스 ray), `BlueAutoAttacker.cs` (자동 → 입력 트리거)
 - **검증**: 마우스 움직이면 상체 즉시 따라옴, 좌클릭 시에만 총알 발사
+- **구현 메모**:
+  - `BluePlayerController`: `Camera.ScreenPointToRay(Mouse.position) ∩ Plane(up, player.position)`. ray가 평면 못 만나면 `_lastAimDir` 유지. AutoAttacker 의존 제거.
+  - `_aimCamera` 인스펙터 미할당 시 `Camera.main` fallback (Proto.Camera 네임스페이스 충돌 회피로 `UnityEngine.Camera` 명시)
+  - `BlueAutoAttacker`: Update에서 `IsFireHeld()` && interval 만족 시 발사. 사격 방향=`transform.forward` (회전이 마우스 따라가므로 자동 정렬). 자동 타겟탐지/사거리(`_range`) 제거.
+  - Input: `_fireAction` (InputActionReference) 우선, fallback `Mouse.current.leftButton.isPressed`
+  - 사양 spec gap (FT-01) "ground y=0" → player 현재 Y 평면으로 해석 (새 맵 표면 -4.92 호환)
 
 ### [ ] #4 카메라 무브먼트 변경 — 마우스-플레이어 보간
 - **현재**: `CameraRig` QuarterView 모드 (플레이어 항상 중앙)

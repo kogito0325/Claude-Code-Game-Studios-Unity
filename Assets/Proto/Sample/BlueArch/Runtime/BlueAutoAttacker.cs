@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Proto.Sample.BlueArch
 {
@@ -7,48 +8,62 @@ namespace Proto.Sample.BlueArch
     {
         [SerializeField] private BlueProjectile _projectilePrefab;
         [SerializeField] private Transform _muzzle;
-        [SerializeField] private float _range = 10f;
         [SerializeField] private float _fireInterval = 0.35f;
         [SerializeField] private int _damage = 10;
-        [SerializeField] private bool _rotateToTarget = true;
+        [SerializeField] private InputActionReference _fireAction;
         [SerializeField] private AudioClip _fireSfx;
         [SerializeField] private GameObject _muzzleVfxPrefab;
         [SerializeField] private BlueAnimDriver _animDriver;
 
         private float _lastFireTime = -999f;
-        private BlueEnemy _currentTarget;
-
-        public BlueEnemy CurrentTarget => _currentTarget;
-        public bool HasTarget => _currentTarget != null && !_currentTarget.IsDead;
+        private InputAction _fireActionInstance;
 
         private void Awake()
         {
             if (_animDriver == null) _animDriver = GetComponent<BlueAnimDriver>();
         }
 
+        private void OnEnable()
+        {
+            if (_fireAction != null)
+            {
+                _fireActionInstance = _fireAction.action;
+                _fireActionInstance.Enable();
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (_fireActionInstance != null)
+            {
+                _fireActionInstance.Disable();
+                _fireActionInstance = null;
+            }
+        }
+
         private void Update()
         {
-            _currentTarget = null;
             if (_projectilePrefab == null) return;
-
-            BlueEnemy target = FindClosestEnemy();
-            if (target == null) return;
-
-            Vector3 origin = _muzzle != null ? _muzzle.position : transform.position + Vector3.up * 1.2f;
-            Vector3 toTarget = target.transform.position - origin;
-            toTarget.y = 0f;
-
-            if (toTarget.sqrMagnitude > _range * _range) return;
-
-            // Confirm target is in range and being tracked.
-            _currentTarget = target;
-
-            // 회전은 BluePlayerController 가 담당 (이동방향 vs 사격방향 충돌 방지).
-            // _rotateToTarget 은 더 이상 사용하지 않지만 인스펙터 호환을 위해 필드 유지.
-
+            if (!IsFireHeld()) return;
             if (Time.time - _lastFireTime < _fireInterval) return;
+            Fire();
+        }
 
-            Vector3 fireDir = toTarget.sqrMagnitude > 1e-4f ? toTarget.normalized : transform.forward;
+        private bool IsFireHeld()
+        {
+            if (_fireActionInstance != null) return _fireActionInstance.IsPressed();
+            Mouse mouse = Mouse.current;
+            return mouse != null && mouse.leftButton.isPressed;
+        }
+
+        private void Fire()
+        {
+            Vector3 origin = _muzzle != null ? _muzzle.position : transform.position + Vector3.up * 1.2f;
+            Vector3 fireDir = transform.forward;
+            fireDir.y = 0f;
+            if (fireDir.sqrMagnitude < 1e-4f) fireDir = Vector3.forward;
+            else fireDir.Normalize();
+
             BlueProjectile bullet = Instantiate(_projectilePrefab, origin, Quaternion.LookRotation(fireDir, Vector3.up));
             bullet.Launch(fireDir, _damage);
 
@@ -65,29 +80,6 @@ namespace Proto.Sample.BlueArch
             }
 
             _lastFireTime = Time.time;
-        }
-
-        private BlueEnemy FindClosestEnemy()
-        {
-            BlueEnemy[] all = FindObjectsByType<BlueEnemy>(FindObjectsSortMode.None);
-            BlueEnemy best = null;
-            float bestSq = _range * _range;
-
-            Vector3 origin = transform.position;
-            for (int i = 0; i < all.Length; i++)
-            {
-                BlueEnemy e = all[i];
-                if (e == null || e.IsDead) continue;
-                Vector3 delta = e.transform.position - origin;
-                delta.y = 0f;
-                float sq = delta.sqrMagnitude;
-                if (sq < bestSq)
-                {
-                    bestSq = sq;
-                    best = e;
-                }
-            }
-            return best;
         }
     }
 }

@@ -16,13 +16,15 @@ namespace Proto.Sample.BlueArch
         [SerializeField] private BlueHitFlash _hitFlash;
         [SerializeField] private AudioClip _hurtSfx;
         [SerializeField] private BlueAnimDriver _animDriver;
-        [SerializeField] private BlueAutoAttacker _autoAttacker;
 
-        [Header("Rotation")]
+        [Header("Aim (마우스 ray → player Y 평면)")]
+        [SerializeField] private UnityEngine.Camera _aimCamera;
         [SerializeField] private float _rotateSpeed = 15f;
 
         private MovementAgent _agent;
         private InputAction _moveActionInstance;
+        private UnityEngine.Camera _cachedCamera;
+        private Vector3 _lastAimDir = Vector3.forward;
 
         public int MaxHp => _maxHp;
         public int Hp { get; private set; }
@@ -35,7 +37,7 @@ namespace Proto.Sample.BlueArch
         {
             _agent = GetComponent<MovementAgent>();
             if (_animDriver == null) _animDriver = GetComponent<BlueAnimDriver>();
-            if (_autoAttacker == null) _autoAttacker = GetComponent<BlueAutoAttacker>();
+            _cachedCamera = _aimCamera != null ? _aimCamera : UnityEngine.Camera.main;
             Hp = _maxHp;
         }
 
@@ -74,24 +76,13 @@ namespace Proto.Sample.BlueArch
                 walkSpeed = _moveSpeed * inputMag;
             }
 
-            // 2) 회전: 적이 있으면 적 방향, 없으면 이동 방향
-            Vector3 facingTarget = Vector3.zero;
-            if (_autoAttacker != null && _autoAttacker.HasTarget)
+            // 2) 회전: 마우스 커서가 가리키는 ground 점 방향 (player Y 평면)
+            if (TryGetMouseAimDir(out Vector3 aimDir))
             {
-                Vector3 toTarget = _autoAttacker.CurrentTarget.transform.position - transform.position;
-                toTarget.y = 0f;
-                if (toTarget.sqrMagnitude > 1e-4f) facingTarget = toTarget.normalized;
+                _lastAimDir = aimDir;
             }
-            else if (inputMag >= 1e-2f)
-            {
-                facingTarget = worldMoveDir.normalized;
-            }
-
-            if (facingTarget.sqrMagnitude > 1e-4f)
-            {
-                transform.rotation = Quaternion.Slerp(transform.rotation,
-                    Quaternion.LookRotation(facingTarget, Vector3.up), _rotateSpeed * Time.deltaTime);
-            }
+            transform.rotation = Quaternion.Slerp(transform.rotation,
+                Quaternion.LookRotation(_lastAimDir, Vector3.up), _rotateSpeed * Time.deltaTime);
 
             // 3) 8-방향 에임-워크: 입력을 캐릭터 로컬 공간으로 변환
             if (_animDriver != null)
@@ -99,6 +90,29 @@ namespace Proto.Sample.BlueArch
                 Vector3 localMove = transform.InverseTransformDirection(worldMoveDir);
                 _animDriver.DriveDirectional(new Vector2(localMove.x, localMove.z), walkSpeed);
             }
+        }
+
+        private bool TryGetMouseAimDir(out Vector3 dir)
+        {
+            dir = default;
+            if (_cachedCamera == null) _cachedCamera = UnityEngine.Camera.main;
+            if (_cachedCamera == null) return false;
+
+            Mouse mouse = Mouse.current;
+            if (mouse == null) return false;
+
+            Vector2 mp = mouse.position.ReadValue();
+            Ray ray = _cachedCamera.ScreenPointToRay(mp);
+            Plane plane = new Plane(Vector3.up, transform.position);
+            if (!plane.Raycast(ray, out float t) || t <= 0f) return false;
+
+            Vector3 hit = ray.GetPoint(t);
+            Vector3 to = hit - transform.position;
+            to.y = 0f;
+            if (to.sqrMagnitude < 1e-4f) return false;
+
+            dir = to.normalized;
+            return true;
         }
 
         private Vector2 ReadMoveInput()
