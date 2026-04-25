@@ -7,7 +7,7 @@
 
 ## 진행 예정 작업
 
-### [ ] #1 몬스터 스폰 방식 변경 — 스폰 포인트 기반
+### [x] #1 몬스터 스폰 방식 변경 — 스폰 포인트 기반 (구현 완료)
 - **현재**: `BlueEnemySpawner`가 플레이어 주변 원형 ring(반경 15)에서 무작위 스폰
 - **변경**:
   - 사용자가 맵에 `BlueEnemySpawnPoint` 게임오브젝트를 자유롭게 여러 개 배치
@@ -16,6 +16,11 @@
   - 거리 옵션: 플레이어로부터 너무 가깝거나 너무 먼 SpawnPoint는 제외
 - **수정 대상**: `BlueEnemySpawner.cs`, 신규 `BlueEnemySpawnPoint.cs`
 - **검증**: Play 시 SpawnPoint 위치에서만 적이 등장하는지
+- **구현 메모**:
+  - 신규 `BlueEnemySpawnPoint` (Awake 시 정적 리스트 자기등록 / OnDisable 해제, Editor Gizmo 구체+jitter 원, 선택 시 라벨)
+  - `BlueEnemySpawner` 옵션: `_pickMode` (Random/RoundRobin), `_minDistanceFromPlayer`, `_maxDistanceFromPlayer` (0=비활성)
+  - SpawnPoint 0개 시 1회 경고 후 스폰 중단
+  - 씬 초기 배치: `Spawner/SpawnPoints/SpawnPoint_{N,NE,E,SE,S,SW,W,NW}` (distance 18, jitter 0)
 
 ### [ ] #2 몬스터 지형 인식 추적 — 평지/도로만 이동
 - **현재**: 적이 플레이어 위치로 직선 이동 (지형 무시)
