@@ -6,6 +6,106 @@ namespace Proto.Sample.BlueArch.EditorTools
 {
     public static class BlueArchSceneLayout
     {
+        [MenuItem("Proto/BlueArch/Import RifleGirl URP Converter")]
+        public static void ImportRifleUrpConverter()
+        {
+            string path = "Assets/UsableRes/CombatGirlsCharacterPack/Rifle_URP_Converter.unitypackage";
+            if (!System.IO.File.Exists(path))
+            {
+                Debug.LogError($"Package not found at {path}");
+                return;
+            }
+            AssetDatabase.ImportPackage(path, false);
+            Debug.Log($"Imported package: {path}");
+        }
+
+        [MenuItem("Proto/BlueArch/Force Mesh2D-Lit-Default on Characters")]
+        public static void ForceMesh2DLitOnCharacters()
+        {
+            const string matGuid = "9452ae1262a74094f8a68013fbcd1834";
+            string matPath = AssetDatabase.GUIDToAssetPath(matGuid);
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+            if (mat == null)
+            {
+                Debug.LogError($"Mesh2D-Lit-Default material not found at GUID {matGuid} (path '{matPath}')");
+                return;
+            }
+
+            int total = 0;
+
+            // 1) Player in scene
+            var player = GameObject.Find("Player");
+            if (player != null)
+            {
+                total += ReplaceAllRendererMaterials(player, mat);
+                EditorUtility.SetDirty(player);
+                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(player.scene);
+            }
+            else Debug.LogWarning("Player not found in active scene.");
+
+            // 2) BlueEnemy prefab — open stage, replace, save
+            const string enemyPrefabPath = "Assets/Proto/Sample/BlueArch/Prefabs/BlueEnemy.prefab";
+            var prefabRoot = PrefabUtility.LoadPrefabContents(enemyPrefabPath);
+            if (prefabRoot != null)
+            {
+                int n = ReplaceAllRendererMaterials(prefabRoot, mat);
+                PrefabUtility.SaveAsPrefabAsset(prefabRoot, enemyPrefabPath);
+                PrefabUtility.UnloadPrefabContents(prefabRoot);
+                total += n;
+                Debug.Log($"BlueEnemy prefab: replaced {n} material slots");
+            }
+            else Debug.LogWarning($"BlueEnemy prefab not found at {enemyPrefabPath}");
+
+            AssetDatabase.SaveAssets();
+            Debug.Log($"Total material slots replaced: {total}");
+        }
+
+        private static int ReplaceAllRendererMaterials(GameObject root, Material mat)
+        {
+            int count = 0;
+            var renderers = root.GetComponentsInChildren<Renderer>(true);
+            foreach (var r in renderers)
+            {
+                var sharedMats = r.sharedMaterials;
+                for (int i = 0; i < sharedMats.Length; i++)
+                {
+                    sharedMats[i] = mat;
+                    count++;
+                }
+                r.sharedMaterials = sharedMats;
+                EditorUtility.SetDirty(r);
+            }
+            return count;
+        }
+
+        [MenuItem("Proto/BlueArch/Strip Magica Cloth Children")]
+        public static void StripMagicaChildren()
+        {
+            var player = GameObject.Find("Player");
+            if (player == null) { Debug.LogError("Player not found"); return; }
+
+            var toDelete = new System.Collections.Generic.List<GameObject>();
+            foreach (var t in player.GetComponentsInChildren<Transform>(true))
+            {
+                if (t == null || t == player.transform) continue;
+                if (t.name.StartsWith("Magica ", System.StringComparison.Ordinal))
+                {
+                    toDelete.Add(t.gameObject);
+                }
+            }
+
+            int deleted = 0;
+            foreach (var go in toDelete)
+            {
+                if (go == null) continue;
+                Object.DestroyImmediate(go);
+                deleted++;
+            }
+
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(player.scene);
+            Debug.Log($"Stripped {deleted} Magica child GameObjects from Player.");
+        }
+
         [MenuItem("Proto/BlueArch/Layout HUD Widgets")]
         public static void LayoutHudWidgets()
         {
