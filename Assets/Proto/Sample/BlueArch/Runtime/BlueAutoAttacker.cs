@@ -16,6 +16,10 @@ namespace Proto.Sample.BlueArch
         [SerializeField] private BlueAnimDriver _animDriver;
 
         private float _lastFireTime = -999f;
+        private BlueEnemy _currentTarget;
+
+        public BlueEnemy CurrentTarget => _currentTarget;
+        public bool HasTarget => _currentTarget != null && !_currentTarget.IsDead;
 
         private void Awake()
         {
@@ -24,6 +28,7 @@ namespace Proto.Sample.BlueArch
 
         private void Update()
         {
+            _currentTarget = null;
             if (_projectilePrefab == null) return;
 
             BlueEnemy target = FindClosestEnemy();
@@ -35,12 +40,11 @@ namespace Proto.Sample.BlueArch
 
             if (toTarget.sqrMagnitude > _range * _range) return;
 
-            if (_rotateToTarget && toTarget.sqrMagnitude > 1e-4f)
-            {
-                Vector3 flatDir = toTarget.normalized;
-                transform.rotation = Quaternion.Slerp(transform.rotation,
-                    Quaternion.LookRotation(flatDir, Vector3.up), 12f * Time.deltaTime);
-            }
+            // Confirm target is in range and being tracked.
+            _currentTarget = target;
+
+            // 회전은 BluePlayerController 가 담당 (이동방향 vs 사격방향 충돌 방지).
+            // _rotateToTarget 은 더 이상 사용하지 않지만 인스펙터 호환을 위해 필드 유지.
 
             if (Time.time - _lastFireTime < _fireInterval) return;
 

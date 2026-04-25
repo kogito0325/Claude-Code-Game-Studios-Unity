@@ -16,6 +16,10 @@ namespace Proto.Sample.BlueArch
         [SerializeField] private BlueHitFlash _hitFlash;
         [SerializeField] private AudioClip _hurtSfx;
         [SerializeField] private BlueAnimDriver _animDriver;
+        [SerializeField] private BlueAutoAttacker _autoAttacker;
+
+        [Header("Rotation")]
+        [SerializeField] private float _rotateSpeed = 15f;
 
         private MovementAgent _agent;
         private InputAction _moveActionInstance;
@@ -31,6 +35,7 @@ namespace Proto.Sample.BlueArch
         {
             _agent = GetComponent<MovementAgent>();
             if (_animDriver == null) _animDriver = GetComponent<BlueAnimDriver>();
+            if (_autoAttacker == null) _autoAttacker = GetComponent<BlueAutoAttacker>();
             Hp = _maxHp;
         }
 
@@ -57,23 +62,43 @@ namespace Proto.Sample.BlueArch
             if (IsDead) return;
 
             Vector2 input = ReadMoveInput();
+            Vector3 worldMoveDir = new Vector3(input.x, 0f, input.y);
+            float inputMag = worldMoveDir.magnitude;
+
+            // 1) 이동
             float walkSpeed = 0f;
-
-            if (input.sqrMagnitude >= 1e-4f)
+            if (inputMag >= 1e-2f)
             {
-                Vector3 worldDelta = new Vector3(input.x, 0f, input.y) * (_moveSpeed * Time.deltaTime);
+                Vector3 worldDelta = worldMoveDir * (_moveSpeed * Time.deltaTime);
                 _agent.MoveBy(worldDelta);
-                walkSpeed = _moveSpeed * input.magnitude;
-
-                Vector3 flatDir = new Vector3(input.x, 0f, input.y);
-                if (flatDir.sqrMagnitude > 1e-4f)
-                {
-                    transform.rotation = Quaternion.Slerp(transform.rotation,
-                        Quaternion.LookRotation(flatDir, Vector3.up), 15f * Time.deltaTime);
-                }
+                walkSpeed = _moveSpeed * inputMag;
             }
 
-            if (_animDriver != null) _animDriver.DriveLocomotion(walkSpeed);
+            // 2) 회전: 적이 있으면 적 방향, 없으면 이동 방향
+            Vector3 facingTarget = Vector3.zero;
+            if (_autoAttacker != null && _autoAttacker.HasTarget)
+            {
+                Vector3 toTarget = _autoAttacker.CurrentTarget.transform.position - transform.position;
+                toTarget.y = 0f;
+                if (toTarget.sqrMagnitude > 1e-4f) facingTarget = toTarget.normalized;
+            }
+            else if (inputMag >= 1e-2f)
+            {
+                facingTarget = worldMoveDir.normalized;
+            }
+
+            if (facingTarget.sqrMagnitude > 1e-4f)
+            {
+                transform.rotation = Quaternion.Slerp(transform.rotation,
+                    Quaternion.LookRotation(facingTarget, Vector3.up), _rotateSpeed * Time.deltaTime);
+            }
+
+            // 3) 8-방향 에임-워크: 입력을 캐릭터 로컬 공간으로 변환
+            if (_animDriver != null)
+            {
+                Vector3 localMove = transform.InverseTransformDirection(worldMoveDir);
+                _animDriver.DriveDirectional(new Vector2(localMove.x, localMove.z), walkSpeed);
+            }
         }
 
         private Vector2 ReadMoveInput()

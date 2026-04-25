@@ -1563,6 +1563,8 @@ MonoBehaviour:
   _hitFlash: {fileID: 0}
   _hurtSfx: {fileID: 0}
   _animDriver: {fileID: 0}
+  _autoAttacker: {fileID: 0}
+  _rotateSpeed: 15
 --- !u!114 &1422015561
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1652,7 +1654,17 @@ MonoBehaviour:
   _dieState: R_Die_F
   _speedThreshold: 0.05
   _crossFadeTime: 0.15
-  _attackHoldDuration: 0.25
+  _attackHoldDuration: 0
+  _idleAimState: R_AimIdle
+  _directionalStates:
+  - R_AimWalk_F
+  - R_AimWalk_FR
+  - R_AimWalk_FR
+  - R_AimWalk_BR
+  - R_AimWalk_B
+  - R_AimWalk_BL
+  - R_AimWalk_FL
+  - R_AimWalk_FL
 --- !u!1 &1431516791
 GameObject:
   m_ObjectHideFlags: 0

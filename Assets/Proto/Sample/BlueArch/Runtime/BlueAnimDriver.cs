@@ -18,6 +18,23 @@ namespace Proto.Sample.BlueArch
         [SerializeField] private float _crossFadeTime = 0.15f;
         [SerializeField] private float _attackHoldDuration = 0.4f;
 
+        [Header("8-direction (used by DriveDirectional)")]
+        [Tooltip("Idle state when aiming (e.g. R_AimIdle).")]
+        [SerializeField] private string _idleAimState = "R_AimIdle";
+        [Tooltip("State per 45° local-direction bucket: 0=F, 1=FR, 2=R, 3=BR, 4=B, 5=BL, 6=L, 7=FL")]
+        [SerializeField]
+        private string[] _directionalStates = new string[8]
+        {
+            "R_AimWalk_F",
+            "R_AimWalk_FR",
+            "R_AimWalk_FR",
+            "R_AimWalk_BR",
+            "R_AimWalk_B",
+            "R_AimWalk_BL",
+            "R_AimWalk_FL",
+            "R_AimWalk_FL",
+        };
+
         private Animator _animator;
         private int _idleHash, _walkHash, _attackHash, _dieHash;
         private int _currentLoopHash;
@@ -48,6 +65,38 @@ namespace Proto.Sample.BlueArch
             {
                 _animator.CrossFade(desiredHash, _crossFadeTime, 0);
                 _currentLoopHash = desiredHash;
+            }
+        }
+
+        /// <summary>
+        /// 8-방향 에임-워크 구동. localXZ 는 캐릭터 로컬 공간의 입력 방향 (Vector2: x=right, y=forward).
+        /// Idle/Walk 상태만 다룬다. 사격 모션은 별도 TriggerAttack 으로 잠깐 오버라이드.
+        /// </summary>
+        public void DriveDirectional(Vector2 localXZ, float speed)
+        {
+            if (_dead || _animator == null) return;
+            if (IsAttacking) return;
+
+            int hash;
+            if (speed < _speedThreshold)
+            {
+                hash = Animator.StringToHash(_idleAimState);
+            }
+            else
+            {
+                float angleDeg = Mathf.Atan2(localXZ.x, localXZ.y) * Mathf.Rad2Deg;
+                int bucket = Mathf.RoundToInt(angleDeg / 45f);
+                bucket = ((bucket % 8) + 8) % 8;
+                if (_directionalStates == null || _directionalStates.Length < 8) return;
+                string name = _directionalStates[bucket];
+                if (string.IsNullOrEmpty(name)) return;
+                hash = Animator.StringToHash(name);
+            }
+
+            if (hash != _currentLoopHash && _animator.HasState(0, hash))
+            {
+                _animator.CrossFade(hash, _crossFadeTime, 0);
+                _currentLoopHash = hash;
             }
         }
 
