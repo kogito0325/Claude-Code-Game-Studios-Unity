@@ -15,6 +15,7 @@ namespace Proto.Sample.BlueArch
         [SerializeField] private int _maxHp = 100;
         [SerializeField] private BlueHitFlash _hitFlash;
         [SerializeField] private AudioClip _hurtSfx;
+        [SerializeField] private BlueAnimDriver _animDriver;
 
         private MovementAgent _agent;
         private InputAction _moveActionInstance;
@@ -29,6 +30,7 @@ namespace Proto.Sample.BlueArch
         private void Awake()
         {
             _agent = GetComponent<MovementAgent>();
+            if (_animDriver == null) _animDriver = GetComponent<BlueAnimDriver>();
             Hp = _maxHp;
         }
 
@@ -55,17 +57,23 @@ namespace Proto.Sample.BlueArch
             if (IsDead) return;
 
             Vector2 input = ReadMoveInput();
-            if (input.sqrMagnitude < 1e-4f) return;
+            float walkSpeed = 0f;
 
-            Vector3 worldDelta = new Vector3(input.x, 0f, input.y) * (_moveSpeed * Time.deltaTime);
-            _agent.MoveBy(worldDelta);
-
-            Vector3 flatDir = new Vector3(input.x, 0f, input.y);
-            if (flatDir.sqrMagnitude > 1e-4f)
+            if (input.sqrMagnitude >= 1e-4f)
             {
-                transform.rotation = Quaternion.Slerp(transform.rotation,
-                    Quaternion.LookRotation(flatDir, Vector3.up), 15f * Time.deltaTime);
+                Vector3 worldDelta = new Vector3(input.x, 0f, input.y) * (_moveSpeed * Time.deltaTime);
+                _agent.MoveBy(worldDelta);
+                walkSpeed = _moveSpeed * input.magnitude;
+
+                Vector3 flatDir = new Vector3(input.x, 0f, input.y);
+                if (flatDir.sqrMagnitude > 1e-4f)
+                {
+                    transform.rotation = Quaternion.Slerp(transform.rotation,
+                        Quaternion.LookRotation(flatDir, Vector3.up), 15f * Time.deltaTime);
+                }
             }
+
+            if (_animDriver != null) _animDriver.DriveLocomotion(walkSpeed);
         }
 
         private Vector2 ReadMoveInput()
@@ -93,7 +101,11 @@ namespace Proto.Sample.BlueArch
             HpChanged?.Invoke(Hp, _maxHp);
             if (_hitFlash != null) _hitFlash.Flash();
             BlueSfx.Play(_hurtSfx, transform.position);
-            if (Hp <= 0) Died?.Invoke();
+            if (Hp <= 0)
+            {
+                if (_animDriver != null) _animDriver.TriggerDie();
+                Died?.Invoke();
+            }
         }
     }
 }

@@ -13,6 +13,8 @@ namespace Proto.Sample.BlueArch
         [SerializeField] private float _touchDamageInterval = 0.5f;
         [SerializeField] private float _touchRange = 1.2f;
         [SerializeField] private BlueHitFlash _hitFlash;
+        [SerializeField] private BlueAnimDriver _animDriver;
+        [SerializeField] private float _destroyDelayOnDeath = 0.6f;
 
         private MovementAgent _agent;
         private BluePlayerController _player;
@@ -28,6 +30,7 @@ namespace Proto.Sample.BlueArch
         private void Awake()
         {
             _agent = GetComponent<MovementAgent>();
+            if (_animDriver == null) _animDriver = GetComponent<BlueAnimDriver>();
             _hp = _maxHp;
         }
 
@@ -44,11 +47,13 @@ namespace Proto.Sample.BlueArch
             toPlayer.y = 0f;
             float distSq = toPlayer.sqrMagnitude;
 
+            float walkSpeed = 0f;
             if (distSq > _touchRange * _touchRange)
             {
                 Vector3 dir = toPlayer.normalized;
                 Vector3 delta = dir * (_moveSpeed * Time.deltaTime);
                 _agent.MoveBy(delta);
+                walkSpeed = _moveSpeed;
 
                 if (dir.sqrMagnitude > 1e-4f)
                 {
@@ -62,8 +67,11 @@ namespace Proto.Sample.BlueArch
                 {
                     _player.TakeDamage(_touchDamage);
                     _lastTouchDamageTime = Time.time;
+                    if (_animDriver != null) _animDriver.TriggerAttack();
                 }
             }
+
+            if (_animDriver != null) _animDriver.DriveLocomotion(walkSpeed);
         }
 
         public void TakeDamage(int amount)
@@ -78,7 +86,10 @@ namespace Proto.Sample.BlueArch
         {
             Died?.Invoke(this);
             OnAnyKilled?.Invoke(this);
-            Destroy(gameObject);
+            if (_animDriver != null) _animDriver.TriggerDie();
+            // Disable AI movement immediately, wait for death anim before destroy.
+            this.enabled = false;
+            Destroy(gameObject, _destroyDelayOnDeath);
         }
     }
 }

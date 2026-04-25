@@ -552,7 +552,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Proto.Sample.BlueArch::Proto.Sample.BlueArch.BlueGameManager
   _player: {fileID: 1422015560}
   _spawner: {fileID: 1004830558}
-  _winDuration: 10
+  _winDuration: 180
 --- !u!4 &337171274
 Transform:
   m_ObjectHideFlags: 0
@@ -1027,6 +1027,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Proto.Sample.BlueArch::Proto.Sample.BlueArch.BlueEnemySpawner
   _enemyPrefab: {fileID: 7045613633170628718, guid: ccb1ab0ab9f823b4b98f38efb9786acb, type: 3}
+  _enemyVariants:
+  - {fileID: 4585704809073637926, guid: 2e19591746a25114b8e03e88e1d2770a, type: 3}
+  - {fileID: 6979060773820784423, guid: 4986005ef3d42c342b0f37ca35f6cfb3, type: 3}
+  - {fileID: 4178966190474332514, guid: 4a11f13aa7beeb4459dc5bed3341ad08, type: 3}
+  - {fileID: 3612611488182149197, guid: a01b724a83edaf740a2aa16b1137a242, type: 3}
+  - {fileID: 9115234180584998271, guid: 3c2c8ab99b75a3745baaea35ae1ee04f, type: 3}
   _player: {fileID: 1422015560}
   _spawnRadius: 15
   _spawnHeight: 0
@@ -1291,6 +1297,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1105734622232753143, guid: c6ccd4cd440ab7341a424f9090b3e8ff, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1422015561}
+    - targetCorrespondingSourceObject: {fileID: 1105734622232753143, guid: c6ccd4cd440ab7341a424f9090b3e8ff, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1422015567}
   m_SourcePrefab: {fileID: 100100000, guid: c6ccd4cd440ab7341a424f9090b3e8ff, type: 3}
 --- !u!1 &1422015557 stripped
 GameObject:
@@ -1337,6 +1346,7 @@ MonoBehaviour:
   _maxHp: 100
   _hitFlash: {fileID: 0}
   _hurtSfx: {fileID: 0}
+  _animDriver: {fileID: 0}
 --- !u!114 &1422015561
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1371,6 +1381,7 @@ MonoBehaviour:
   _rotateToTarget: 1
   _fireSfx: {fileID: 0}
   _muzzleVfxPrefab: {fileID: 0}
+  _animDriver: {fileID: 0}
 --- !u!114 &1422015563
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1407,6 +1418,25 @@ CapsuleCollider:
   m_Height: 1.8
   m_Direction: 1
   m_Center: {x: 0, y: 0.9, z: 0}
+--- !u!114 &1422015567
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1422015557}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c03c8aa9bc9a124a958011e46b76cf5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Proto.Sample.BlueArch::Proto.Sample.BlueArch.BlueAnimDriver
+  _idleState: IDLE
+  _walkState: JOG
+  _attackState: SHOOT
+  _dieState: DIE F
+  _speedThreshold: 0.05
+  _crossFadeTime: 0.15
+  _attackHoldDuration: 0.25
 --- !u!1 &1431516791
 GameObject:
   m_ObjectHideFlags: 0

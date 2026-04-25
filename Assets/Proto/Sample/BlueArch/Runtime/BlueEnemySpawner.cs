@@ -6,6 +6,7 @@ namespace Proto.Sample.BlueArch
     public sealed class BlueEnemySpawner : MonoBehaviour
     {
         [SerializeField] private BlueEnemy _enemyPrefab;
+        [SerializeField] private BlueEnemy[] _enemyVariants;
         [SerializeField] private BluePlayerController _player;
 
         [Header("Spawn Ring")]
@@ -28,7 +29,8 @@ namespace Proto.Sample.BlueArch
 
         private void Update()
         {
-            if (!_active || _enemyPrefab == null || _player == null || _player.IsDead) return;
+            if (!_active || _player == null || _player.IsDead) return;
+            if (PickPrefab() == null) return;
 
             _elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(_elapsed / Mathf.Max(_rampDuration, 1e-3f));
@@ -46,13 +48,36 @@ namespace Proto.Sample.BlueArch
 
         private void SpawnOne()
         {
+            BlueEnemy prefab = PickPrefab();
+            if (prefab == null) return;
+
             float angle = Random.value * Mathf.PI * 2f;
             Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * _spawnRadius;
             Vector3 spawnPos = _player.transform.position + offset;
             spawnPos.y = _spawnHeight;
 
-            BlueEnemy enemy = Instantiate(_enemyPrefab, spawnPos, Quaternion.identity);
+            BlueEnemy enemy = Instantiate(prefab, spawnPos, Quaternion.identity);
             enemy.Initialize(_player);
+        }
+
+        private BlueEnemy PickPrefab()
+        {
+            if (_enemyVariants != null && _enemyVariants.Length > 0)
+            {
+                int validCount = 0;
+                for (int i = 0; i < _enemyVariants.Length; i++) if (_enemyVariants[i] != null) validCount++;
+                if (validCount == 0) return _enemyPrefab;
+
+                int target = Random.Range(0, validCount);
+                int seen = 0;
+                for (int i = 0; i < _enemyVariants.Length; i++)
+                {
+                    if (_enemyVariants[i] == null) continue;
+                    if (seen == target) return _enemyVariants[i];
+                    seen++;
+                }
+            }
+            return _enemyPrefab;
         }
 
         private int CountAlive()

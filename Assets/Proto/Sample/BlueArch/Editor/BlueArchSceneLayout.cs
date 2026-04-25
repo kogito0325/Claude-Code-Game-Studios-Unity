@@ -78,6 +78,93 @@ namespace Proto.Sample.BlueArch.EditorTools
             return count;
         }
 
+        [MenuItem("Proto/BlueArch/Build TinyHero Enemy Variants")]
+        public static void BuildTinyHeroEnemyVariants()
+        {
+            const string sourceFolder = "Assets/UsableRes/RPGTinyHeroWorldBundlePBR/RPGTinyHeroWavePBR/Prefab/ModularCharacters";
+            const string targetFolder = "Assets/Proto/Sample/BlueArch/Prefabs/Enemies";
+
+            if (!System.IO.Directory.Exists(targetFolder))
+            {
+                System.IO.Directory.CreateDirectory(targetFolder);
+                AssetDatabase.Refresh();
+            }
+
+            string[] sources = new string[]
+            {
+                $"{sourceFolder}/MC01.prefab",
+                $"{sourceFolder}/MC02.prefab",
+                $"{sourceFolder}/MC03.prefab",
+                $"{sourceFolder}/MC04.prefab",
+                $"{sourceFolder}/MC05.prefab",
+            };
+
+            int createdCount = 0;
+            foreach (string srcPath in sources)
+            {
+                string baseName = System.IO.Path.GetFileNameWithoutExtension(srcPath);
+                string dstPath = $"{targetFolder}/BlueEnemy_{baseName}.prefab";
+
+                var src = AssetDatabase.LoadAssetAtPath<GameObject>(srcPath);
+                if (src == null) { Debug.LogWarning($"Source missing: {srcPath}"); continue; }
+
+                var inst = (GameObject)PrefabUtility.InstantiatePrefab(src);
+                inst.name = $"BlueEnemy_{baseName}";
+
+                // MovementAgent requires CapsuleCollider
+                var capsule = inst.GetComponent<CapsuleCollider>();
+                if (capsule == null) capsule = inst.AddComponent<CapsuleCollider>();
+                capsule.radius = 0.4f;
+                capsule.height = 1.8f;
+                capsule.center = new Vector3(0f, 0.9f, 0f);
+                capsule.direction = 1;
+
+                if (inst.GetComponent<Proto.Movement.MovementAgent>() == null)
+                {
+                    var agent = inst.AddComponent<Proto.Movement.MovementAgent>();
+                    var profile = AssetDatabase.LoadAssetAtPath<Proto.Movement.MovementProfile>(
+                        "Assets/Proto/Data/Config/Movement_Default.asset");
+                    if (profile != null)
+                    {
+                        var so = new SerializedObject(agent);
+                        so.FindProperty("_profile").objectReferenceValue = profile;
+                        so.ApplyModifiedPropertiesWithoutUndo();
+                    }
+                }
+
+                if (inst.GetComponent<BlueEnemy>() == null) inst.AddComponent<BlueEnemy>();
+                if (inst.GetComponent<BlueAnimEventSink>() == null) inst.AddComponent<BlueAnimEventSink>();
+
+                if (inst.GetComponent<BlueAnimDriver>() == null)
+                {
+                    var driver = inst.AddComponent<BlueAnimDriver>();
+                    var so = new SerializedObject(driver);
+                    so.FindProperty("_idleState").stringValue = "Idle_Normal_NoWeapon";
+                    so.FindProperty("_walkState").stringValue = "MoveFWD_Normal_InPlace_NoWeapon";
+                    so.FindProperty("_attackState").stringValue = "Attack01_NoWeapon";
+                    so.FindProperty("_dieState").stringValue = "Die01_NoWeapon";
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                }
+
+                // Replace controller with NoWeaponStance which has the named states above.
+                var anim = inst.GetComponent<Animator>();
+                if (anim != null)
+                {
+                    var noWeaponCtrl = AssetDatabase.LoadAssetAtPath<UnityEngine.RuntimeAnimatorController>(
+                        "Assets/UsableRes/RPGTinyHeroWorldBundlePBR/RPGTinyHeroWavePBR/Animator/NoWeaponStance.controller");
+                    if (noWeaponCtrl != null) anim.runtimeAnimatorController = noWeaponCtrl;
+                }
+
+                PrefabUtility.SaveAsPrefabAsset(inst, dstPath);
+                Object.DestroyImmediate(inst);
+                createdCount++;
+                Debug.Log($"Built variant: {dstPath}");
+            }
+
+            AssetDatabase.SaveAssets();
+            Debug.Log($"Created {createdCount} BlueEnemy_MC* variants in {targetFolder}");
+        }
+
         [MenuItem("Proto/BlueArch/Fix BlueEnemy Mesh Reference")]
         public static void FixBlueEnemyMesh()
         {

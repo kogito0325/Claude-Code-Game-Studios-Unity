@@ -13,8 +13,14 @@ namespace Proto.Sample.BlueArch
         [SerializeField] private bool _rotateToTarget = true;
         [SerializeField] private AudioClip _fireSfx;
         [SerializeField] private GameObject _muzzleVfxPrefab;
+        [SerializeField] private BlueAnimDriver _animDriver;
 
         private float _lastFireTime = -999f;
+
+        private void Awake()
+        {
+            if (_animDriver == null) _animDriver = GetComponent<BlueAnimDriver>();
+        }
 
         private void Update()
         {
@@ -42,6 +48,7 @@ namespace Proto.Sample.BlueArch
             BlueProjectile bullet = Instantiate(_projectilePrefab, origin, Quaternion.LookRotation(fireDir, Vector3.up));
             bullet.Launch(fireDir, _damage);
 
+            if (_animDriver != null) _animDriver.TriggerAttack();
             BlueSfx.Play(_fireSfx, origin, 0.7f);
             if (_muzzleVfxPrefab != null)
             {

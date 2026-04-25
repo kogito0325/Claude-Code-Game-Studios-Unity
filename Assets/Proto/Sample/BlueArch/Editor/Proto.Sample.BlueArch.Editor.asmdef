@@ -2,7 +2,8 @@
     "name": "Proto.Sample.BlueArch.Editor",
     "rootNamespace": "Proto.Sample.BlueArch.EditorTools",
     "references": [
-        "Proto.Sample.BlueArch"
+        "Proto.Sample.BlueArch",
+        "Proto"
     ],
     "includePlatforms": ["Editor"],
     "excludePlatforms": [],
