@@ -78,6 +78,75 @@ namespace Proto.Sample.BlueArch.EditorTools
             return count;
         }
 
+        [MenuItem("Proto/BlueArch/Fix BlueEnemy Mesh Reference")]
+        public static void FixBlueEnemyMesh()
+        {
+            const string enemyPrefabPath = "Assets/Proto/Sample/BlueArch/Prefabs/BlueEnemy.prefab";
+            const string fbxPath = "Assets/UsableRes/CombatGirlsCharacterPack/Humanoid_Bot/Models/Humanoid_F.fbx";
+
+            Mesh targetMesh = null;
+            foreach (var a in AssetDatabase.LoadAllAssetsAtPath(fbxPath))
+            {
+                if (a is Mesh m && m.name == "Humanoid_Female")
+                {
+                    targetMesh = m;
+                    break;
+                }
+            }
+            if (targetMesh == null)
+            {
+                Debug.LogError($"Humanoid_Female mesh not found in {fbxPath}");
+                return;
+            }
+
+            var prefabRoot = PrefabUtility.LoadPrefabContents(enemyPrefabPath);
+            if (prefabRoot == null) { Debug.LogError($"Failed to load {enemyPrefabPath}"); return; }
+
+            int fixedCount = 0;
+            foreach (var smr in prefabRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                if (smr.sharedMesh == null)
+                {
+                    smr.sharedMesh = targetMesh;
+                    EditorUtility.SetDirty(smr);
+                    fixedCount++;
+                    Debug.Log($"Assigned mesh '{targetMesh.name}' to '{smr.name}'");
+                }
+            }
+
+            PrefabUtility.SaveAsPrefabAsset(prefabRoot, enemyPrefabPath);
+            PrefabUtility.UnloadPrefabContents(prefabRoot);
+            Debug.Log($"Fixed {fixedCount} SkinnedMeshRenderer mesh refs in BlueEnemy prefab.");
+        }
+
+        [MenuItem("Proto/BlueArch/Diagnose BlueEnemy Mesh")]
+        public static void DiagnoseBlueEnemyMesh()
+        {
+            const string enemyPrefabPath = "Assets/Proto/Sample/BlueArch/Prefabs/BlueEnemy.prefab";
+            const string fbxPath = "Assets/UsableRes/CombatGirlsCharacterPack/Humanoid_Bot/Models/Humanoid_F.fbx";
+
+            // 1) Inspect BlueEnemy prefab's SkinnedMeshRenderer
+            var prefabRoot = PrefabUtility.LoadPrefabContents(enemyPrefabPath);
+            if (prefabRoot != null)
+            {
+                var smrs = prefabRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+                foreach (var smr in smrs)
+                {
+                    Debug.Log($"[BlueEnemy.prefab] '{smr.name}' sharedMesh = {(smr.sharedMesh != null ? smr.sharedMesh.name : "<NULL>")}, rootBone = {(smr.rootBone != null ? smr.rootBone.name : "<NULL>")}, bones = {(smr.bones != null ? smr.bones.Length : 0)}");
+                }
+                PrefabUtility.UnloadPrefabContents(prefabRoot);
+            }
+
+            // 2) List all sub-assets in the FBX
+            var allAssets = AssetDatabase.LoadAllAssetsAtPath(fbxPath);
+            Debug.Log($"[Humanoid_F.fbx] {allAssets.Length} sub-assets:");
+            foreach (var a in allAssets)
+            {
+                if (a == null) continue;
+                Debug.Log($"  - {a.GetType().Name}: '{a.name}'");
+            }
+        }
+
         [MenuItem("Proto/BlueArch/Strip Missing Scripts")]
         public static void StripMissingScripts()
         {
