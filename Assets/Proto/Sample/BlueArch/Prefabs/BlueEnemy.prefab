@@ -979,9 +979,9 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: cbed5c9206e01a14a837e5b5a1eb446a, type: 2}
-  - {fileID: 2100000, guid: 917480fb281ff9541bd3a89120ebb720, type: 2}
-  - {fileID: 2100000, guid: 43923a31077d0024498b345fd1be457a, type: 2}
+  - {fileID: 2100000, guid: cd22f26edf4dae64b83c44359673e159, type: 2}
+  - {fileID: 2100000, guid: 3203d85be82216f4cba66d5c4efe49fc, type: 2}
+  - {fileID: 2100000, guid: 98db64a67f237044baa53fc6de35c8f2, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2017,6 +2017,7 @@ MonoBehaviour:
   _touchDamage: 8
   _touchDamageInterval: 0.5
   _touchRange: 1.2
+  _hitFlash: {fileID: 0}
 --- !u!1 &8557634941850243037
 GameObject:
   m_ObjectHideFlags: 0
