@@ -1918,6 +1918,7 @@ GameObject:
   - component: {fileID: 5632133354038389688}
   - component: {fileID: 7832243880269525329}
   - component: {fileID: 7045613633170628718}
+  - component: {fileID: 6815247242689360685}
   m_Layer: 0
   m_Name: BlueEnemy
   m_TagString: Untagged
@@ -2018,6 +2019,18 @@ MonoBehaviour:
   _touchDamageInterval: 0.5
   _touchRange: 1.2
   _hitFlash: {fileID: 0}
+--- !u!114 &6815247242689360685
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8481984436694402960}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 145b09a49470fb940a2b19c5333d7de9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Proto.Sample.BlueArch::Proto.Sample.BlueArch.BlueAnimEventSink
 --- !u!1 &8557634941850243037
 GameObject:
   m_ObjectHideFlags: 0
