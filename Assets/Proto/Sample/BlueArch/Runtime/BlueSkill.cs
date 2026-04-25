@@ -11,6 +11,7 @@ namespace Proto.Sample.BlueArch
         [SerializeField] private int _damage = 40;
         [SerializeField] private float _cooldown = 6f;
         [SerializeField] private GameObject _vfxPrefab;
+        [SerializeField] private AudioClip _skillSfx;
 
         private InputAction _actionInstance;
         private float _lastCastTime = -999f;
@@ -79,6 +80,8 @@ namespace Proto.Sample.BlueArch
                 GameObject vfx = Instantiate(_vfxPrefab, center, Quaternion.identity);
                 Destroy(vfx, 2f);
             }
+
+            BlueSfx.Play(_skillSfx, center);
         }
     }
 }

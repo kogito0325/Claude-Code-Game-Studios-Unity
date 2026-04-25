@@ -11,6 +11,8 @@ namespace Proto.Sample.BlueArch
         [SerializeField] private float _fireInterval = 0.35f;
         [SerializeField] private int _damage = 10;
         [SerializeField] private bool _rotateToTarget = true;
+        [SerializeField] private AudioClip _fireSfx;
+        [SerializeField] private GameObject _muzzleVfxPrefab;
 
         private float _lastFireTime = -999f;
 
@@ -39,6 +41,13 @@ namespace Proto.Sample.BlueArch
             Vector3 fireDir = toTarget.sqrMagnitude > 1e-4f ? toTarget.normalized : transform.forward;
             BlueProjectile bullet = Instantiate(_projectilePrefab, origin, Quaternion.LookRotation(fireDir, Vector3.up));
             bullet.Launch(fireDir, _damage);
+
+            BlueSfx.Play(_fireSfx, origin, 0.7f);
+            if (_muzzleVfxPrefab != null)
+            {
+                GameObject vfx = Instantiate(_muzzleVfxPrefab, origin, Quaternion.LookRotation(fireDir, Vector3.up));
+                Destroy(vfx, 0.6f);
+            }
 
             _lastFireTime = Time.time;
         }

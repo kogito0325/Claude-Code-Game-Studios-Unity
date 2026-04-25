@@ -12,6 +12,7 @@ namespace Proto.Sample.BlueArch
         [SerializeField] private int _touchDamage = 8;
         [SerializeField] private float _touchDamageInterval = 0.5f;
         [SerializeField] private float _touchRange = 1.2f;
+        [SerializeField] private BlueHitFlash _hitFlash;
 
         private MovementAgent _agent;
         private BluePlayerController _player;
@@ -69,6 +70,7 @@ namespace Proto.Sample.BlueArch
         {
             if (IsDead || amount <= 0) return;
             _hp = Mathf.Max(0, _hp - amount);
+            if (_hitFlash != null) _hitFlash.Flash();
             if (_hp <= 0) Die();
         }
 

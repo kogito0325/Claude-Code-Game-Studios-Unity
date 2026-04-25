@@ -9,6 +9,8 @@ namespace Proto.Sample.BlueArch
         [SerializeField] private float _lifeTime = 2.5f;
         [SerializeField] private float _hitRadius = 0.35f;
         [SerializeField] private LayerMask _enemyLayers = ~0;
+        [SerializeField] private AudioClip _hitSfx;
+        [SerializeField] private GameObject _hitVfxPrefab;
 
         private int _damage = 10;
         private Vector3 _direction;
@@ -39,6 +41,12 @@ namespace Proto.Sample.BlueArch
                 if (hit.collider.TryGetComponent<BlueEnemy>(out var enemy))
                 {
                     enemy.TakeDamage(_damage);
+                }
+                BlueSfx.Play(_hitSfx, hit.point, 0.7f);
+                if (_hitVfxPrefab != null)
+                {
+                    GameObject vfx = Instantiate(_hitVfxPrefab, hit.point, Quaternion.LookRotation(-_direction, Vector3.up));
+                    Destroy(vfx, 0.8f);
                 }
                 Destroy(gameObject);
                 return;

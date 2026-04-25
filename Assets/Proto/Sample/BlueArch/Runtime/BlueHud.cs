@@ -86,11 +86,11 @@ namespace Proto.Sample.BlueArch
             {
                 case BlueGameManager.GameState.Win:
                     _resultText.gameObject.SetActive(true);
-                    _resultText.text = "VICTORY";
+                    _resultText.text = "VICTORY\n\nPress R to Restart";
                     break;
                 case BlueGameManager.GameState.Lose:
                     _resultText.gameObject.SetActive(true);
-                    _resultText.text = "DEFEAT";
+                    _resultText.text = "DEFEAT\n\nPress R to Restart";
                     break;
             }
         }

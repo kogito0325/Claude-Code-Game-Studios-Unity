@@ -13,6 +13,8 @@ namespace Proto.Sample.BlueArch
 
         [Header("HP")]
         [SerializeField] private int _maxHp = 100;
+        [SerializeField] private BlueHitFlash _hitFlash;
+        [SerializeField] private AudioClip _hurtSfx;
 
         private MovementAgent _agent;
         private InputAction _moveActionInstance;
@@ -89,6 +91,8 @@ namespace Proto.Sample.BlueArch
             if (IsDead || amount <= 0) return;
             Hp = Mathf.Max(0, Hp - amount);
             HpChanged?.Invoke(Hp, _maxHp);
+            if (_hitFlash != null) _hitFlash.Flash();
+            BlueSfx.Play(_hurtSfx, transform.position);
             if (Hp <= 0) Died?.Invoke();
         }
     }
