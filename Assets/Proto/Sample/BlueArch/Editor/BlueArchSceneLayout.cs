@@ -78,6 +78,65 @@ namespace Proto.Sample.BlueArch.EditorTools
             return count;
         }
 
+        [MenuItem("Proto/BlueArch/Strip Missing Scripts")]
+        public static void StripMissingScripts()
+        {
+            int totalRemoved = 0;
+            int totalGosVisited = 0;
+
+            // 1) 씬 전체 walk
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            foreach (var root in scene.GetRootGameObjects())
+            {
+                totalRemoved += StripRecursive(root, ref totalGosVisited);
+            }
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(scene);
+
+            // 2) 처리 대상 프리팹들
+            string[] prefabsToClean = new string[]
+            {
+                "Assets/Proto/Sample/BlueArch/Prefabs/BlueEnemy.prefab",
+                "Assets/Proto/Sample/BlueArch/Prefabs/BlueProjectile.prefab",
+                "Assets/UsableRes/CombatGirlsCharacterPack/RifleGirl/Prefab/Rifle_Full_Body.prefab",
+                "Assets/UsableRes/CombatGirlsCharacterPack/Humanoid_Bot/Prefab/Humanoid_F.prefab",
+                "Assets/UsableRes/CombatGirlsCharacterPack/Humanoid_Bot/Prefab/Humanoid_F_Rifle.prefab",
+            };
+            foreach (string p in prefabsToClean)
+            {
+                if (!System.IO.File.Exists(p)) continue;
+                var prefabRoot = PrefabUtility.LoadPrefabContents(p);
+                if (prefabRoot == null) continue;
+
+                int n = StripRecursive(prefabRoot, ref totalGosVisited);
+                if (n > 0) PrefabUtility.SaveAsPrefabAsset(prefabRoot, p);
+                PrefabUtility.UnloadPrefabContents(prefabRoot);
+                Debug.Log($"{System.IO.Path.GetFileName(p)}: removed {n} missing scripts");
+                totalRemoved += n;
+            }
+
+            Debug.Log($"Total missing scripts removed: {totalRemoved} across {totalGosVisited} GameObjects.");
+        }
+
+        private static int StripRecursive(GameObject root, ref int visited)
+        {
+            int removed = 0;
+            var stack = new System.Collections.Generic.Stack<Transform>();
+            stack.Push(root.transform);
+            while (stack.Count > 0)
+            {
+                var t = stack.Pop();
+                visited++;
+                int n = GameObjectUtility.RemoveMonoBehavioursWithMissingScript(t.gameObject);
+                if (n > 0)
+                {
+                    removed += n;
+                    EditorUtility.SetDirty(t.gameObject);
+                }
+                for (int i = 0; i < t.childCount; i++) stack.Push(t.GetChild(i));
+            }
+            return removed;
+        }
+
         [MenuItem("Proto/BlueArch/Strip Magica Cloth Children")]
         public static void StripMagicaChildren()
         {
