@@ -22,17 +22,24 @@
   - SpawnPoint 0개 시 1회 경고 후 스폰 중단
   - 씬 초기 배치: `Spawner/SpawnPoints/SpawnPoint_{N,NE,E,SE,S,SW,W,NW}` (distance 18, jitter 0)
 
-### [ ] #2 몬스터 지형 인식 추적 — 평지/도로만 이동
+### [x] #2 몬스터 지형 인식 추적 — NavMesh 적용 (구현 완료)
 - **현재**: 적이 플레이어 위치로 직선 이동 (지형 무시)
 - **변경**:
   - 몬스터가 일정 경사 이상 / 벽은 오르지 않음
   - 가능하면 도로·평지 우선 이동
 - **구현 후보**:
-  - (a) Unity NavMesh — 맵에 NavMesh Bake 후 NavMeshAgent 사용 (정석, 가장 깔끔)
+  - (a) Unity NavMesh — 맵에 NavMesh Bake 후 NavMeshAgent 사용 (정석, 가장 깔끔) ← 채택
   - (b) 간이 경사 검사 — 다음 스텝 위치의 ground 노멀 검사해서 너무 가파르면 거부
   - (c) Layer 분리 — 도로/평지에 별도 콜라이더 레이어 부여, 그 위로만 이동
 - **수정 대상**: `BlueEnemy.cs` (Update의 추적 로직), 또는 새 컴포넌트 `BlueEnemyNavigator`
 - **검증**: 적이 산·언덕·벽을 우회하거나 멈추는지
+- **구현 메모**:
+  - 패키지: `com.unity.ai.navigation 2.0.12` (이미 설치)
+  - `BlueEnemy.cs`: NavMeshAgent 우선, `isOnNavMesh` false 시 MovementAgent 직선 fallback
+  - 적 프리팹 6개 (BlueEnemy + Enemies/MC01-05) 에 NavMeshAgent 컴포넌트 추가 (radius 0.4, height 1.8, stoppingDistance 1)
+  - 씬에 `NavMesh` GameObject + `NavMeshSurface` (collectObjects=All, useGeometry=RenderMeshes) 추가, 베이크 1.36초 통과
+  - SpawnPoint 8개 모두 NavMesh 위 (`SamplePosition` within 2m 검증 PASS)
+- **알려진 부수 이슈**: Player 시작 위치가 (0,0,0)인데 RPGTinyHero 맵 표면은 Y≈-4.92 → Player가 공중에 떠 있음. 적은 path 자동 보정으로 도달 가능하지만 사용자 확인 필요.
 
 ### [ ] #3 플레이어 조작 방식 변경 — 마우스 조준 + 좌클릭 발사
 - **현재**: 자동으로 가장 가까운 적 향해 회전·발사 (`BlueAutoAttacker.HasTarget`)

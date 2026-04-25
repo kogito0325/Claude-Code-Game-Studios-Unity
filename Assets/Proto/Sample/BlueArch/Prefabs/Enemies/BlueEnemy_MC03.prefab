@@ -91,6 +91,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4651870295556474333, guid: a0e8c99b85dbbeb4bbdaf9a1c148ed80, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7461862770393613613}
+    - targetCorrespondingSourceObject: {fileID: 4651870295556474333, guid: a0e8c99b85dbbeb4bbdaf9a1c148ed80, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5656505359983774525}
   m_SourcePrefab: {fileID: 100100000, guid: a0e8c99b85dbbeb4bbdaf9a1c148ed80, type: 3}
 --- !u!1 &1778528477772085607 stripped
 GameObject:
@@ -153,6 +156,8 @@ MonoBehaviour:
   _hitFlash: {fileID: 0}
   _animDriver: {fileID: 0}
   _destroyDelayOnDeath: 0.6
+  _navAcceleration: 12
+  _navAngularSpeed: 720
 --- !u!114 &5218754885966825523
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -184,3 +189,37 @@ MonoBehaviour:
   _speedThreshold: 0.05
   _crossFadeTime: 0.15
   _attackHoldDuration: 0.4
+  _idleAimState: R_AimIdle
+  _directionalStates:
+  - R_AimWalk_F
+  - R_AimWalk_FR
+  - R_AimWalk_FR
+  - R_AimWalk_BR
+  - R_AimWalk_B
+  - R_AimWalk_BL
+  - R_AimWalk_FL
+  - R_AimWalk_FL
+  _walkAnimReferenceSpeed: 2
+  _animSpeedClamp: {x: 0.5, y: 1.8}
+--- !u!195 &5656505359983774525
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1778528477772085607}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.4
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 1
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 1.8
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
