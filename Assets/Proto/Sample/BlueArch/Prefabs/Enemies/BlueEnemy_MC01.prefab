@@ -24,10 +24,14 @@ PrefabInstance:
       propertyPath: m_LocalRotation.y
       value: -0.39297143
       objectReference: {fileID: 0}
+    - target: {fileID: 5053353830109982860, guid: b419e164ab53516438da636332342da9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7191100790416280148, guid: b419e164ab53516438da636332342da9, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 7d1b1732d2419e848a0c682b06dc1c67, type: 2}
+      objectReference: {fileID: 9100000, guid: 7ecc72d3b7edb824b90dcb888def7edc, type: 2}
     - target: {fileID: 7224149203388998861, guid: b419e164ab53516438da636332342da9, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

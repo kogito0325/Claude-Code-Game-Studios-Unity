@@ -12,6 +12,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BlueEnemy_MC04
       objectReference: {fileID: 0}
+    - target: {fileID: 8890435577953970352, guid: 435bb8e3cb367524788cbb43c18e476c, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 7ecc72d3b7edb824b90dcb888def7edc, type: 2}
     - target: {fileID: 9001452590761231913, guid: 435bb8e3cb367524788cbb43c18e476c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

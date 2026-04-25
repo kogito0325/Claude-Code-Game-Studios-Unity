@@ -206,6 +206,33 @@ namespace Proto.Sample.BlueArch.EditorTools
             Debug.Log($"Fixed {fixedCount} SkinnedMeshRenderer mesh refs in BlueEnemy prefab.");
         }
 
+        [MenuItem("Proto/BlueArch/Diagnose Map Ground")]
+        public static void DiagnoseMapGround()
+        {
+            string[] testPoints = new[] { "Player(0,0,0)", "Spawn ring NW(-10,0,10)", "Spawn ring SE(10,0,-10)", "Spawn ring N(0,0,15)", "Spawn ring S(0,0,-15)" };
+            Vector3[] points = new[] { Vector3.zero, new Vector3(-10, 0, 10), new Vector3(10, 0, -10), new Vector3(0, 0, 15), new Vector3(0, 0, -15) };
+            for (int i = 0; i < points.Length; i++)
+            {
+                Vector3 origin = points[i] + Vector3.up * 100f;
+                if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 200f))
+                {
+                    Debug.Log($"[Map] {testPoints[i]}: ground at y={hit.point.y:F2}, hit '{hit.collider.name}' (layer={LayerMask.LayerToName(hit.collider.gameObject.layer)})");
+                }
+                else
+                {
+                    Debug.LogWarning($"[Map] {testPoints[i]}: NO GROUND BELOW (raycast missed within 200u)");
+                }
+            }
+
+            var player = GameObject.Find("Player");
+            if (player != null)
+            {
+                Debug.Log($"[Player] position={player.transform.position}");
+                var capsule = player.GetComponent<CapsuleCollider>();
+                if (capsule != null) Debug.Log($"[Player] CapsuleCollider radius={capsule.radius}, height={capsule.height}, center={capsule.center}");
+            }
+        }
+
         [MenuItem("Proto/BlueArch/Diagnose Player Animator")]
         public static void DiagnosePlayerAnimator()
         {
