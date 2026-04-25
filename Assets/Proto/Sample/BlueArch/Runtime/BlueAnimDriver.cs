@@ -34,6 +34,10 @@ namespace Proto.Sample.BlueArch
             "R_AimWalk_FL",
             "R_AimWalk_FL",
         };
+        [Tooltip("발이 미끄러지지 않게 Animator.speed를 (실제이속/이값)으로 동기화. 0이면 끔.")]
+        [SerializeField] private float _walkAnimReferenceSpeed = 2.0f;
+        [Tooltip("Animator.speed 가능 범위.")]
+        [SerializeField] private Vector2 _animSpeedClamp = new Vector2(0.5f, 1.8f);
 
         private Animator _animator;
         private int _idleHash, _walkHash, _attackHash, _dieHash;
@@ -78,7 +82,8 @@ namespace Proto.Sample.BlueArch
             if (IsAttacking) return;
 
             int hash;
-            if (speed < _speedThreshold)
+            bool moving = speed >= _speedThreshold;
+            if (!moving)
             {
                 hash = Animator.StringToHash(_idleAimState);
             }
@@ -91,6 +96,20 @@ namespace Proto.Sample.BlueArch
                 string name = _directionalStates[bucket];
                 if (string.IsNullOrEmpty(name)) return;
                 hash = Animator.StringToHash(name);
+            }
+
+            // 발 미끄러짐 보정: Animator.speed 를 실제 이동속도와 동기화.
+            if (_walkAnimReferenceSpeed > 1e-3f)
+            {
+                if (moving)
+                {
+                    float ratio = speed / _walkAnimReferenceSpeed;
+                    _animator.speed = Mathf.Clamp(ratio, _animSpeedClamp.x, _animSpeedClamp.y);
+                }
+                else
+                {
+                    _animator.speed = 1f;
+                }
             }
 
             if (hash != _currentLoopHash && _animator.HasState(0, hash))

@@ -1557,7 +1557,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20c08a120b44e434292a1537e065a2b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Proto.Sample.BlueArch::Proto.Sample.BlueArch.BluePlayerController
-  _moveSpeed: 5
+  _moveSpeed: 4
   _moveAction: {fileID: 0}
   _maxHp: 100
   _hitFlash: {fileID: 0}
@@ -1653,7 +1653,7 @@ MonoBehaviour:
   _attackState: R_AimIdle_AutoShoot
   _dieState: R_Die_F
   _speedThreshold: 0.05
-  _crossFadeTime: 0.15
+  _crossFadeTime: 0.1
   _attackHoldDuration: 0
   _idleAimState: R_AimIdle
   _directionalStates:
@@ -1665,6 +1665,8 @@ MonoBehaviour:
   - R_AimWalk_BL
   - R_AimWalk_FL
   - R_AimWalk_FL
+  _walkAnimReferenceSpeed: 1.6
+  _animSpeedClamp: {x: 0.6, y: 2}
 --- !u!1 &1431516791
 GameObject:
   m_ObjectHideFlags: 0
