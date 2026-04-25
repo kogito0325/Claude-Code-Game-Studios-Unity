@@ -80,6 +80,10 @@ namespace Proto.Sample.BlueArch
                 GameObject vfx = Instantiate(_vfxPrefab, center, Quaternion.identity);
                 Destroy(vfx, 2f);
             }
+            else
+            {
+                BlueVfx.SkillRing(center, _radius);
+            }
 
             BlueSfx.Play(_skillSfx, center);
         }

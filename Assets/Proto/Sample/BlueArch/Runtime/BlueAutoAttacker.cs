@@ -48,6 +48,10 @@ namespace Proto.Sample.BlueArch
                 GameObject vfx = Instantiate(_muzzleVfxPrefab, origin, Quaternion.LookRotation(fireDir, Vector3.up));
                 Destroy(vfx, 0.6f);
             }
+            else
+            {
+                BlueVfx.Muzzle(origin, fireDir);
+            }
 
             _lastFireTime = Time.time;
         }

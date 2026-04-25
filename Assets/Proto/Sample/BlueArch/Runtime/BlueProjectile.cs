@@ -48,6 +48,10 @@ namespace Proto.Sample.BlueArch
                     GameObject vfx = Instantiate(_hitVfxPrefab, hit.point, Quaternion.LookRotation(-_direction, Vector3.up));
                     Destroy(vfx, 0.8f);
                 }
+                else
+                {
+                    BlueVfx.Hit(hit.point);
+                }
                 Destroy(gameObject);
                 return;
             }
