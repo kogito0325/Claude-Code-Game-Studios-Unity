@@ -163,8 +163,8 @@ MonoBehaviour:
   _navAcceleration: 12
   _navAngularSpeed: 720
   _targetSprite: {fileID: 1940741103, guid: 24602832149432746a76d3476dc8330d, type: 3}
-  _targetHeight: 2
-  _targetBaseScale: {x: 0.8, y: 0.8, z: 1}
+  _targetHeight: 1.6
+  _targetBaseScale: {x: 0.4, y: 0.4, z: 1}
   _targetPulseSpeed: 2
   _targetPulseAmount: 0.25
   _targetColor: {r: 1, g: 1, b: 1, a: 1}
