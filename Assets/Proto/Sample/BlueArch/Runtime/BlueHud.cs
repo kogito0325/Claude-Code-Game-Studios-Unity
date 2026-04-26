@@ -32,7 +32,7 @@ namespace Proto.Sample.BlueArch
         [Tooltip("결과 화면 우측: R 키 재시작 안내.")]
         [SerializeField] private TMP_Text _resultRightHint;
         [Tooltip("우측 안내 문구.")]
-        [SerializeField] private string _restartHintText = "R 키를 눌러 다시 시작";
+        [SerializeField] private string _restartHintText = "Press 'R' to restart";
 
         private void Start()
         {
@@ -145,7 +145,7 @@ namespace Proto.Sample.BlueArch
             float survived = _gameManager != null ? _gameManager.Elapsed : 0f;
             int mm = Mathf.FloorToInt(survived / 60f);
             int ss = Mathf.FloorToInt(survived - mm * 60f);
-            return $"생존 시간\n{mm:0}:{ss:00}\n\n처치 점수\n{score}";
+            return $"Time\n{mm:0}:{ss:00}\n\nScore\n{score}";
         }
 
         private IEnumerator FadeInResult()

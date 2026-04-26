@@ -21,6 +21,16 @@ namespace Proto.Sample.BlueArch
         [SerializeField] private float _navAcceleration = 12f;
         [SerializeField] private float _navAngularSpeed = 720f;
 
+        [Header("Target Marker (머리 위 펄스 sprite)")]
+        [SerializeField] private Sprite _targetSprite;
+        [Tooltip("적 발 기준 머리 위 표시 높이 (unit).")]
+        [SerializeField] private float _targetHeight = 2.0f;
+        [SerializeField] private Vector3 _targetBaseScale = new Vector3(0.8f, 0.8f, 1f);
+        [SerializeField] private float _targetPulseSpeed = 2.0f;
+        [SerializeField, Range(0f, 1f)] private float _targetPulseAmount = 0.25f;
+        [SerializeField] private Color _targetColor = Color.white;
+        [SerializeField] private int _targetSortingOrder = 100;
+
         private MovementAgent _agent;
         private NavMeshAgent _navAgent;
         private BluePlayerController _player;
@@ -49,6 +59,24 @@ namespace Proto.Sample.BlueArch
                 _navAgent.autoBraking = true;
                 _navAgent.updateRotation = false;
             }
+
+            SetupTargetMarker();
+        }
+
+        private void SetupTargetMarker()
+        {
+            if (_targetSprite == null) return;
+            var go = new GameObject("TargetMarker");
+            go.transform.SetParent(transform, worldPositionStays: false);
+            go.transform.localPosition = Vector3.up * _targetHeight;
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = _targetSprite;
+            sr.color = _targetColor;
+            sr.sortingOrder = _targetSortingOrder;
+
+            var marker = go.AddComponent<BlueTargetMarker>();
+            marker.Configure(_targetPulseSpeed, _targetPulseAmount, _targetBaseScale);
         }
 
         public void Initialize(BluePlayerController player)
