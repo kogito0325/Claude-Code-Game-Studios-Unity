@@ -17,6 +17,11 @@ namespace Proto.Sample.BlueArch
         [SerializeField] private AudioClip _hurtSfx;
         [SerializeField] private BlueAnimDriver _animDriver;
 
+        [Header("Animator")]
+        [SerializeField] private Animator _animator;
+        [Tooltip("Animator.applyRootMotion 을 비활성화. 켜져 있으면 애니메이션 클립의 root motion 이 transform 에 가산되어 WASD 이동 방향이 살짝 틀어짐.")]
+        [SerializeField] private bool _disableRootMotion = true;
+
         [Header("Aim (마우스 ray → aim plane)")]
         [SerializeField] private UnityEngine.Camera _aimCamera;
         [SerializeField] private float _rotateSpeed = 15f;
@@ -39,6 +44,8 @@ namespace Proto.Sample.BlueArch
         {
             _agent = GetComponent<MovementAgent>();
             if (_animDriver == null) _animDriver = GetComponent<BlueAnimDriver>();
+            if (_animator == null) _animator = GetComponent<Animator>();
+            if (_animator != null && _disableRootMotion) _animator.applyRootMotion = false;
             _cachedCamera = _aimCamera != null ? _aimCamera : UnityEngine.Camera.main;
             Hp = _maxHp;
         }
