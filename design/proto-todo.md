@@ -56,17 +56,23 @@
   - Input: `_fireAction` (InputActionReference) 우선, fallback `Mouse.current.leftButton.isPressed`
   - 사양 spec gap (FT-01) "ground y=0" → player 현재 Y 평면으로 해석 (새 맵 표면 -4.92 호환)
 
-### [ ] #4 카메라 무브먼트 변경 — 마우스-플레이어 보간
+### [x] #4 카메라 무브먼트 변경 — 마우스-플레이어 보간 (구현 완료)
 - **현재**: `CameraRig` QuarterView 모드 (플레이어 항상 중앙)
 - **변경**:
   - 카메라 타겟 위치 = `Lerp(player.position, mouseWorldPosition, factor)` (factor 약 0.3~0.5 튜닝)
   - 마우스를 화면 가장자리로 옮기면 카메라가 그 방향으로 살짝 미끄러짐
   - 최대 오프셋 거리 클램프 (예: 5 ~ 8 unit)
-- **구현 후보**:
-  - (a) 새 `IFramingTarget` 가상 타겟 게임오브젝트 — 매 프레임 위치를 보간 결과로 갱신, CameraRig가 추적
-  - (b) `CameraRig`에 직접 LookOffset 기능 추가 — 더 침습적
-- **수정 대상**: 신규 `BlueCameraAimOffset.cs` 또는 `CameraRig.cs` 확장
+- **구현 후보**: (a) 채택 — 신규 `IFramingTarget` 컴포넌트가 매 프레임 보간 위치 갱신, CameraRig 의 `WeightedAverageStrategy` 가 추적
+- **수정 대상**: 신규 `BlueCameraAimOffset.cs`, Editor 메뉴 `BlueArchSceneLayout.SetupCameraAimOffset`
 - **검증**: 마우스 위치 변경에 따라 화면이 부드럽게 이동, 플레이어가 화면 가장자리로 안 빠지는지
+- **구현 메모**:
+  - `BlueCameraAimOffset` 은 Player GameObject 의 sibling 컴포넌트로 부착 (자기 자신의 `Position` 을 IFramingTarget 으로 제공)
+  - `[DefaultExecutionOrder(100)]` — `ProtoUnitTarget.Start` 가 먼저 자기 등록을 끝낸 뒤 본 컴포넌트가 sibling 을 unregister + 자기를 register (단독 앵커)
+  - 기본 파라미터: `_aimFactor 0.4`, `_maxOffset 7`, `_smoothTime 0.12` — 인스펙터 조정 가능
+  - 마우스 ray → `Plane(up, player.position)` 교점 (BluePlayerController 와 동일 평면 — Y 차이 보정)
+  - `Vector3.SmoothDamp` 로 카메라 앵커 부드럽게 추격 (lerp + critically damped)
+  - Editor 메뉴 `Proto/BlueArch/Setup Camera Aim Offset` — Player 에 컴포넌트 추가 + `_rig`/`_aimCamera`/`_player` 자동 와이어
+- **알려진 제한**: `_aimCamera` 는 BluePlayerController 와 동일하게 Camera.main 에 fallback. `Game/SceneView` 카메라가 분리되어야 정상 동작 (현재 기본 셋업 그대로)
 
 ---
 

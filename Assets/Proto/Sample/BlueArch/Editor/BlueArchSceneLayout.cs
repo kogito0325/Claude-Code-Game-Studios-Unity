@@ -400,6 +400,40 @@ namespace Proto.Sample.BlueArch.EditorTools
             Debug.Log($"Stripped {deleted} Magica child GameObjects from Player.");
         }
 
+        [MenuItem("Proto/BlueArch/Setup Camera Aim Offset")]
+        public static void SetupCameraAimOffset()
+        {
+            var player = GameObject.Find("Player");
+            if (player == null) { Debug.LogError("Player not found in active scene"); return; }
+
+            var rig = Object.FindFirstObjectByType<Proto.Camera.CameraRig>();
+            if (rig == null) { Debug.LogError("CameraRig not found in active scene"); return; }
+
+            var aimOffset = player.GetComponent<BlueCameraAimOffset>();
+            if (aimOffset == null) aimOffset = player.AddComponent<BlueCameraAimOffset>();
+
+            // BluePlayerController 의 _aimCamera 와 동일한 카메라를 사용 (마우스 ray 일관성)
+            UnityEngine.Camera aimCam = null;
+            var pc = player.GetComponent<BluePlayerController>();
+            if (pc != null)
+            {
+                var so = new SerializedObject(pc);
+                var camProp = so.FindProperty("_aimCamera");
+                if (camProp != null) aimCam = camProp.objectReferenceValue as UnityEngine.Camera;
+            }
+            if (aimCam == null) aimCam = UnityEngine.Camera.main;
+
+            var aoSo = new SerializedObject(aimOffset);
+            aoSo.FindProperty("_rig").objectReferenceValue = rig;
+            aoSo.FindProperty("_aimCamera").objectReferenceValue = aimCam;
+            aoSo.FindProperty("_player").objectReferenceValue = player.transform;
+            aoSo.ApplyModifiedPropertiesWithoutUndo();
+
+            EditorUtility.SetDirty(aimOffset);
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(player.scene);
+            Debug.Log($"[CameraAimOffset] attached to Player. rig='{rig.name}', aimCam='{(aimCam != null ? aimCam.name : "<null>")}'");
+        }
+
         [MenuItem("Proto/BlueArch/Layout HUD Widgets")]
         public static void LayoutHudWidgets()
         {
