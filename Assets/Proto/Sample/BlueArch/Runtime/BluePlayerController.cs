@@ -17,9 +17,11 @@ namespace Proto.Sample.BlueArch
         [SerializeField] private AudioClip _hurtSfx;
         [SerializeField] private BlueAnimDriver _animDriver;
 
-        [Header("Aim (마우스 ray → player Y 평면)")]
+        [Header("Aim (마우스 ray → aim plane)")]
         [SerializeField] private UnityEngine.Camera _aimCamera;
         [SerializeField] private float _rotateSpeed = 15f;
+        [Tooltip("마우스 ray ∩ aim plane 의 Y 높이(플레이어 기준 로컬). 0=발 평면, >0=총구 높이 평면. BlueAutoAttacker 의 muzzle.Y 와 일치하도록 조정 (현 muzzle.Y=1.3).")]
+        [SerializeField] private float _aimHeight = 1.3f;
 
         private MovementAgent _agent;
         private InputAction _moveActionInstance;
@@ -103,7 +105,7 @@ namespace Proto.Sample.BlueArch
 
             Vector2 mp = mouse.position.ReadValue();
             Ray ray = _cachedCamera.ScreenPointToRay(mp);
-            Plane plane = new Plane(Vector3.up, transform.position);
+            Plane plane = new Plane(Vector3.up, transform.position + Vector3.up * _aimHeight);
             if (!plane.Raycast(ray, out float t) || t <= 0f) return false;
 
             Vector3 hit = ray.GetPoint(t);

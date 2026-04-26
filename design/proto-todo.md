@@ -7,6 +7,38 @@
 
 ## 진행 예정 작업
 
+### [x] #5 카메라 기본 정렬 위치 보정 — 화면 아래쪽 적이 더 보이도록 (구현 완료)
+- **현재**: `BlueCameraAimOffset.desired = Lerp(player.position, mouseWorld, 0.4)` — anchor 가 player 발 위치 기준이라 화면에서 플레이어가 화면 중앙. 쿼터뷰 카메라 forward 가 (0, -0.64, 0.77) 이라 카메라 가까운 쪽(-Z, 화면 아래) 시야가 좁음.
+- **변경**:
+  - `BlueCameraAimOffset` 에 `_baseAnchorOffset` (Vector3, default (0, 0, 2.5)) 추가
+  - desired = player.position + _baseAnchorOffset + lerpedMouseOffset
+  - 효과: anchor 와 카메라 둘 다 +Z 로 이동 → 플레이어가 화면 약간 아래에 표시 → 카메라 뒷쪽(-Z) 적도 화면에 들어옴
+- **수정 대상**: `BlueCameraAimOffset.cs`
+- **검증**: Play 시 플레이어가 화면 중앙보다 약간 위, 화면 하단에 player.position 기준 -Z 영역이 보이는지
+- **구현 메모**:
+  - `_baseAnchorOffset` (Vector3, default (0,0,2.5)) 추가 — anchor pivot 보장
+  - 마우스 lerp 의 pivot 을 player → baseDesired 로 변경: `desired = baseDesired + (mouseWorld - baseDesired) * aimFactor`
+  - `_maxOffset` default 7 → 1.5 로 축소 — anchor 가 baseDesired ±1.5 사이로 제한, anchor.z >= 1.0 보장
+  - 씬에 직렬화된 _maxOffset(7) 도 1.5 로 set_property 동기화
+
+### [x] #6 마우스 위치 ↔ 총알 방향 일치 — aim plane 높이 보정 (구현 완료)
+- **현재**: `BluePlayerController` 의 aim plane = `Plane(up, player.position)` (Y=0). muzzle.Y ≈ 1.5 (총구 높이). 화면에서 마우스가 적 몸체(Y≈1)를 가리켜도 ray ∩ Y=0 점은 적 발 위치보다 카메라 forward 쪽으로 멀리 → player 회전·발사 방향이 어긋남. 수평 마우스에서 깊이 성분이 커 오차 큼.
+- **변경**:
+  - `BluePlayerController` 에 `_aimHeight` (float, default 1.5) 추가
+  - aim plane = `Plane(up, transform.position + Vector3.up * _aimHeight)`
+  - `BlueCameraAimOffset` 도 동일하게 `_aimHeight` 추가 (일관성)
+  - `BlueAutoAttacker` 는 변경 불필요 — `transform.forward` (수평) 가 muzzle.Y 평면 위 점을 향하므로 자동 정렬
+- **수정 대상**: `BluePlayerController.cs`, `BlueCameraAimOffset.cs`
+- **검증**: 마우스가 화면 좌우 끝 적을 가리킬 때 총알이 그 적에 정확히 도달
+- **구현 메모**:
+  - `BluePlayerController._aimHeight` (float, default 1.3) 추가 — plane = `Plane(up, transform.position + Vector3.up * _aimHeight)`
+  - `BlueCameraAimOffset._aimHeight` (default 1.3) 동일 — 마우스 lerp 의 ray-plane 통일
+  - default 1.3 = 현재 Player/Muzzle.position.y 와 정확히 일치 (Player/Muzzle 직접 측정)
+  - 씬에 직렬화된 _aimHeight(1.5) 도 1.3 으로 set_property 동기화 (양 컴포넌트)
+  - `BlueAutoAttacker` 변경 불필요 — `transform.forward` (수평) 가 muzzle.Y 평면 위 점을 향하므로 자동 정렬
+
+---
+
 ### [x] #1 몬스터 스폰 방식 변경 — 스폰 포인트 기반 (구현 완료)
 - **현재**: `BlueEnemySpawner`가 플레이어 주변 원형 ring(반경 15)에서 무작위 스폰
 - **변경**:
