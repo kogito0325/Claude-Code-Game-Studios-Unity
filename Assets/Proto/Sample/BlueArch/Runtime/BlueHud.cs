@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,6 +20,14 @@ namespace Proto.Sample.BlueArch
         [SerializeField] private Image _skillCooldownFill;
         [SerializeField] private TMP_Text _resultText;
 
+        [Header("Result Screen (페이드인)")]
+        [Tooltip("결과 패널 루트의 CanvasGroup. alpha 0→1 으로 페이드 인.")]
+        [SerializeField] private CanvasGroup _resultGroup;
+        [SerializeField] private Image _victoryImage;
+        [SerializeField] private Image _failedImage;
+        [Tooltip("페이드인 지속 시간(초). Time.unscaledDeltaTime 기준.")]
+        [SerializeField] private float _resultFadeDuration = 0.8f;
+
         private void Start()
         {
             if (_player != null)
@@ -32,6 +41,14 @@ namespace Proto.Sample.BlueArch
                 _gameManager.ScoreChanged += OnScoreChanged;
             }
             if (_resultText != null) _resultText.gameObject.SetActive(false);
+
+            if (_resultGroup != null)
+            {
+                _resultGroup.alpha = 0f;
+                _resultGroup.gameObject.SetActive(false);
+            }
+            if (_victoryImage != null) _victoryImage.gameObject.SetActive(false);
+            if (_failedImage != null) _failedImage.gameObject.SetActive(false);
         }
 
         private void OnDestroy()
@@ -81,18 +98,45 @@ namespace Proto.Sample.BlueArch
 
         private void OnStateChanged(BlueGameManager.GameState s)
         {
-            if (_resultText == null) return;
+            Image showImage = null;
             switch (s)
             {
-                case BlueGameManager.GameState.Win:
-                    _resultText.gameObject.SetActive(true);
-                    _resultText.text = "VICTORY\n\nPress R to Restart";
-                    break;
-                case BlueGameManager.GameState.Lose:
-                    _resultText.gameObject.SetActive(true);
-                    _resultText.text = "DEFEAT\n\nPress R to Restart";
-                    break;
+                case BlueGameManager.GameState.Win:  showImage = _victoryImage; break;
+                case BlueGameManager.GameState.Lose: showImage = _failedImage; break;
+                default: return;
             }
+
+            if (_resultGroup != null && showImage != null)
+            {
+                if (_victoryImage != null) _victoryImage.gameObject.SetActive(showImage == _victoryImage);
+                if (_failedImage != null)  _failedImage.gameObject.SetActive(showImage == _failedImage);
+                _resultGroup.gameObject.SetActive(true);
+                _resultGroup.alpha = 0f;
+                StopAllCoroutines();
+                StartCoroutine(FadeInResult());
+            }
+
+            if (_resultText != null)
+            {
+                _resultText.gameObject.SetActive(true);
+                _resultText.text = s == BlueGameManager.GameState.Win
+                    ? "Press R to Restart"
+                    : "Press R to Restart";
+            }
+        }
+
+        private IEnumerator FadeInResult()
+        {
+            if (_resultGroup == null) yield break;
+            float dur = Mathf.Max(0.0001f, _resultFadeDuration);
+            float t = 0f;
+            while (t < dur)
+            {
+                t += Time.unscaledDeltaTime;
+                _resultGroup.alpha = Mathf.Clamp01(t / dur);
+                yield return null;
+            }
+            _resultGroup.alpha = 1f;
         }
     }
 }
