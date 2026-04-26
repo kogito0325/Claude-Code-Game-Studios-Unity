@@ -27,6 +27,12 @@ namespace Proto.Sample.BlueArch
         [SerializeField] private Image _failedImage;
         [Tooltip("페이드인 지속 시간(초). Time.unscaledDeltaTime 기준.")]
         [SerializeField] private float _resultFadeDuration = 0.8f;
+        [Tooltip("결과 화면 좌측: 생존 시간/점수 표시.")]
+        [SerializeField] private TMP_Text _resultLeftStats;
+        [Tooltip("결과 화면 우측: R 키 재시작 안내.")]
+        [SerializeField] private TMP_Text _resultRightHint;
+        [Tooltip("우측 안내 문구.")]
+        [SerializeField] private string _restartHintText = "R 키를 눌러 다시 시작";
 
         private void Start()
         {
@@ -49,6 +55,8 @@ namespace Proto.Sample.BlueArch
             }
             if (_victoryImage != null) _victoryImage.gameObject.SetActive(false);
             if (_failedImage != null) _failedImage.gameObject.SetActive(false);
+            if (_resultLeftStats != null) _resultLeftStats.gameObject.SetActive(false);
+            if (_resultRightHint != null) _resultRightHint.gameObject.SetActive(false);
         }
 
         private void OnDestroy()
@@ -110,19 +118,34 @@ namespace Proto.Sample.BlueArch
             {
                 if (_victoryImage != null) _victoryImage.gameObject.SetActive(showImage == _victoryImage);
                 if (_failedImage != null)  _failedImage.gameObject.SetActive(showImage == _failedImage);
+
+                if (_resultLeftStats != null)
+                {
+                    _resultLeftStats.text = BuildStatsText();
+                    _resultLeftStats.gameObject.SetActive(true);
+                }
+                if (_resultRightHint != null)
+                {
+                    _resultRightHint.text = _restartHintText;
+                    _resultRightHint.gameObject.SetActive(true);
+                }
+
                 _resultGroup.gameObject.SetActive(true);
                 _resultGroup.alpha = 0f;
                 StopAllCoroutines();
                 StartCoroutine(FadeInResult());
             }
 
-            if (_resultText != null)
-            {
-                _resultText.gameObject.SetActive(true);
-                _resultText.text = s == BlueGameManager.GameState.Win
-                    ? "Press R to Restart"
-                    : "Press R to Restart";
-            }
+            if (_resultText != null) _resultText.gameObject.SetActive(false);
+        }
+
+        private string BuildStatsText()
+        {
+            int score = _gameManager != null ? _gameManager.Score : 0;
+            float survived = _gameManager != null ? _gameManager.Elapsed : 0f;
+            int mm = Mathf.FloorToInt(survived / 60f);
+            int ss = Mathf.FloorToInt(survived - mm * 60f);
+            return $"생존 시간\n{mm:0}:{ss:00}\n\n처치 점수\n{score}";
         }
 
         private IEnumerator FadeInResult()
