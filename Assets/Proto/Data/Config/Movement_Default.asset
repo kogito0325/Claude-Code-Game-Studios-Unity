@@ -16,7 +16,7 @@ MonoBehaviour:
   height: 1.8
   maxSpeed: 5
   acceleration: 40
-  stepOffset: 0.3
+  stepOffset: 0.1
   slopeLimit: 45
   blockingLayers:
     serializedVersion: 2

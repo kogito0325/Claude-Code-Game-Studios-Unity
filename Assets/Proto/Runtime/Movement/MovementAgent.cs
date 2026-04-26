@@ -188,6 +188,17 @@ namespace Proto.Movement
                         slid.y = 0f;
                     }
 
+                    if (_profile.blockReverseSlide)
+                    {
+                        Vector3 slidH = new Vector3(slid.x, 0f, slid.z);
+                        Vector3 dirH = new Vector3(dir.x, 0f, dir.z);
+                        if (slidH.sqrMagnitude > 1e-8f && dirH.sqrMagnitude > 1e-8f
+                            && Vector3.Dot(slidH.normalized, dirH.normalized) < 0f)
+                        {
+                            slid = Vector3.zero;
+                        }
+                    }
+
                     remaining = slid;
                 }
                 else
@@ -221,6 +232,10 @@ namespace Proto.Movement
                     _profile.stepOffset + _profile.skinWidth, _profile.groundLayers,
                     QueryTriggerInteraction.Ignore))
             {
+                if (Vector3.Dot(downHit.normal, Vector3.up) < _profile.stepSurfaceMinFlatness)
+                {
+                    return false;
+                }
                 resolved = (forwardEnd + Vector3.up * (_profile.stepOffset - downHit.distance)) - from;
                 return true;
             }
