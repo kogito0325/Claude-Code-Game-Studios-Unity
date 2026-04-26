@@ -97,7 +97,25 @@ namespace Proto.Movement
         public MoveResult MoveBy(Vector3 delta)
         {
             if (!IsFinite(delta)) return MoveResult.Invalid;
-            return ApplyMove(delta, fireEvents: true);
+
+            float mag = delta.magnitude;
+            float maxLen = _profile.maxSubstepLength;
+            if (maxLen <= 0f || mag <= maxLen)
+            {
+                return ApplyMove(delta, fireEvents: true);
+            }
+
+            int substeps = Mathf.CeilToInt(mag / maxLen);
+            Vector3 step = delta / substeps;
+            MoveResult final = MoveResult.Ok;
+            for (int i = 0; i < substeps; i++)
+            {
+                MoveResult r = ApplyMove(step, fireEvents: i == substeps - 1);
+                if (r == MoveResult.Invalid) return r;
+                if (r == MoveResult.Blocked) { final = r; break; }
+                if (r == MoveResult.PartiallyMoved) final = r;
+            }
+            return final;
         }
 
         public MoveResult MoveTo(Vector3 worldTarget)

@@ -26,6 +26,8 @@ namespace Proto.Movement
         public LayerMask groundLayers = 1;
         [Tooltip("벽 슬라이드 시 입력 반대 방향(>90°)으로 미끄러지는 것을 차단. true=입력 의도 보존, false=정통 character controller 동작.")]
         public bool blockReverseSlide = true;
+        [Tooltip("한 번의 SweepAndSlide 가 이동할 수 있는 최대 거리(unit). 이보다 큰 delta 는 여러 substep 으로 분할 — fps 변동에 따른 stepOver/충돌 판정 불일치 방지. 0 이하면 분할 비활성.")]
+        public float maxSubstepLength = 0.1f;
 
         [Header("Gravity")]
         public bool applyGravity = true;
