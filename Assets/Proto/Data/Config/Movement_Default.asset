@@ -16,14 +16,16 @@ MonoBehaviour:
   height: 1.8
   maxSpeed: 5
   acceleration: 40
-  stepOffset: 0.1
-  slopeLimit: 45
+  stepOffset: 0.5
+  slopeLimit: 60
+  stepSurfaceMinFlatness: 0.85
   blockingLayers:
     serializedVersion: 2
     m_Bits: 4294967295
   groundLayers:
     serializedVersion: 2
     m_Bits: 1
+  blockReverseSlide: 1
   applyGravity: 1
   gravity: -20
   maxPushoutIterations: 3

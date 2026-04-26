@@ -237,9 +237,13 @@ namespace Proto.Movement
             Vector3 upOffset = Vector3.up * _profile.stepOffset;
             GetCapsulePoints(from + upOffset, out Vector3 p0, out Vector3 p1);
 
-            if (Physics.CapsuleCast(p0, p1, _profile.radius, dir, out _,
+            if (Physics.CapsuleCast(p0, p1, _profile.radius, dir, out RaycastHit upHit,
                     distance, _profile.blockingLayers, QueryTriggerInteraction.Ignore))
             {
+                if (_profile.debugLog)
+                {
+                    Debug.Log($"[Step] REJECT forward-sweep blocked dist={distance:F3} hit={upHit.collider.name} dt={Time.deltaTime:F4}");
+                }
                 return false;
             }
 
@@ -250,14 +254,27 @@ namespace Proto.Movement
                     _profile.stepOffset + _profile.skinWidth, _profile.groundLayers,
                     QueryTriggerInteraction.Ignore))
             {
-                if (Vector3.Dot(downHit.normal, Vector3.up) < _profile.stepSurfaceMinFlatness)
+                float flatness = Vector3.Dot(downHit.normal, Vector3.up);
+                if (flatness < _profile.stepSurfaceMinFlatness)
                 {
+                    if (_profile.debugLog)
+                    {
+                        Debug.Log($"[Step] REJECT not-flat surface={downHit.collider.name} flatness={flatness:F2} < {_profile.stepSurfaceMinFlatness} dt={Time.deltaTime:F4}");
+                    }
                     return false;
                 }
                 resolved = (forwardEnd + Vector3.up * (_profile.stepOffset - downHit.distance)) - from;
+                if (_profile.debugLog)
+                {
+                    Debug.Log($"[Step] OK forward={distance:F3} upDelta={(_profile.stepOffset - downHit.distance):F3} surface={downHit.collider.name} dt={Time.deltaTime:F4}");
+                }
                 return true;
             }
 
+            if (_profile.debugLog)
+            {
+                Debug.Log($"[Step] REJECT down-sweep miss forwardEnd={forwardEnd} dist={distance:F3} dt={Time.deltaTime:F4}");
+            }
             return false;
         }
 
